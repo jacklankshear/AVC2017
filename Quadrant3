@@ -46,7 +46,7 @@ double Q3(){
         reaction = 100;                                 //do a 180
     } else if (leftCounter > 0){                         
         reaction = 101;                                 //turn left 90
-    } else if (rightCounter > 0 && leftCounter == 0){
+    } else if (rightCounter > 0 && leftCounter == 0 && horiCounter == 0){
         reaction = 102;                                 //turn right 90
     } else{
         if (err == 0){                                       // go straight
