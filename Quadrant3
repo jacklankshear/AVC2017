@@ -9,12 +9,12 @@ double Q3(){
     }
     
     char leftPixels[120] = {};
-    for (int i=0; i<120; i++){
+    for (int i=0; i<80; i++){
         leftPixels[i] = get_pixel(i*2, 10, 3);
     }
     
     char rightPixels[120] = {};
-    for (int i=0; i<120; i++){
+    for (int i=0; i<80; i++){
         rightPixels[i] = get_pixel(i*2, 310, 3);
     }
     
@@ -63,8 +63,7 @@ double Q3(){
 void main(){
     init();
     
-    int motor1;
-    int motor2;
+    int motor1, motor2;
     
     double turn = Q3();
     sleep1(0, 100000);
