@@ -1,0 +1,153 @@
+#include "E101.h"
+#include <stdio.h>
+
+double Q3(){
+    take_picture();
+    char horiPixels[160] = {};
+    for (int i=0; i<160; i++){
+        horiPixels[i] = get_pixel(80, i*2, 3);
+    }
+    
+    char topPixels[160] = {};
+    for (int i=0; i<160; i++){
+        topPixels[i] = get_pixel(1, i*2, 3);
+    }
+    
+    char leftPixels[120] = {};
+    for (int i=60; i<100; i++){
+        leftPixels[i] = get_pixel(i*2, 10, 3);
+    }
+    
+    char rightPixels[120] = {};
+    for (int i=60; i<100; i++){
+        rightPixels[i] = get_pixel(i*2, 310, 3);
+    }
+    
+    int horiError = 0, topError = 0, horiCounter = 0, topCounter = 0, leftCounter = 0, rightCounter = 0;
+    for (int i=0; i < 160; i++){
+        if (horiPixels[i] > 127){
+            horiError += i - 80;
+            horiCounter++;
+        }
+    }
+    
+    for (int i=0; i < 120; i++){
+        if (topPixels[i] > 127){
+			topError += i - 80;
+            topCounter++;
+        }
+    }
+    
+    for (int i=0; i < 120; i++){
+        if (leftPixels[i] > 127){
+            leftCounter++;
+        }
+    }
+    for (int i=0; i < 160; i++){
+        if (rightPixels[i] > 127){
+            rightCounter++;
+        }
+    }
+    
+    double reaction, horiAvgError, topAvgError;
+    if (horiCounter > 0){
+        horiAvgError = horiError / horiCounter;
+    }
+    if (topCounter > 0){
+        topAvgError = topError / topCounter;
+    }
+    
+    if (horiCounter > 0){ 
+		if (horiError == 0 && topError == 0){                                       // go straight
+            reaction = 0;
+        } else if (topAvgError - horiAvgError > 17){
+			reaction = topAvgError;
+			
+        } else {
+            reaction = horiAvgError;
+        }
+    
+    } else if(rightCounter > 0 && leftCounter == 0 && horiCounter == 0){
+        reaction = 102;                                 //turn right 90
+    } else if (leftCounter > 0){                         
+        reaction = 101;                                 //turn left 90
+    } else if(horiCounter == 0){
+        reaction = 100;                                 //turn 180
+    } 
+        
+    return reaction;
+    
+}
+
+int line(){
+	take_picture();
+	char pixel = get_pixel(160, 120, 3);
+	if (pixel > 127){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+int main(){
+    init();
+    
+    int motor1, motor2, foundLine;
+    
+    double turn = Q3();
+    sleep1(0, 100000);
+    
+    while (turn != 103){                     //until it finds white line or finds first wall of maze (temp atm)
+        turn = Q3();
+        
+        if (turn == 100){             //180 turn
+			foundLine = line();
+			sleep1(0, 100000);
+			
+			while (foundLine == 0){
+				set_motor(1, 60);
+				set_motor(2, -60);
+				foundLine = line();
+				sleep1(0, 100000);
+			}
+			
+        
+        } else if (turn == 101){
+            foundLine = line();       //turn left
+			sleep1(0, 100000);
+			
+			while (foundLine == 0){
+				set_motor(1, 55);
+				set_motor(2, 10);
+				foundLine = line();
+				sleep1(0, 100000);
+			}
+			
+        
+        } else if (turn == 102){
+			foundLine = line();      //turn right
+			sleep1(0, 100000);
+			
+			while (foundLine == 0){
+				set_motor(1, 15);
+				set_motor(2, 85);
+				foundLine = line();
+				sleep1(0, 100000);
+			}
+			
+        
+        } else{
+            double scale = 0.25;                    
+            motor1 = 55 - (int) (turn * scale);
+            motor2 = 55 + (int) (turn * scale);
+
+            set_motor(1, motor1);
+            set_motor(2, motor2);
+
+            sleep1(0, 100000);
+        
+        }
+    }
+    
+    return 0;
+}
