@@ -50,7 +50,7 @@ double Q2(){
     
     if (counter == 0){
         avgErr = -100;
-    } else if (counter == 160){
+    } else if (counter == 80){
         avgErr = 100;
     } else{
         if (err == 0){                           // check that err != 0
