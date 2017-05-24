@@ -60,17 +60,19 @@ double Q3(){
     if (horiCounter > 0){ 
 		if (horiError == 0 && topError == 0){                                       // go straight
             reaction = 0;
-        } else if (topAvgError - horiAvgError > 17){
+        } else if (topAvgError - horiAvgError > 13){
 			reaction = topAvgError;
 			
         } else {
             reaction = horiAvgError;
         }
+		
+	} else if (leftCounter > 0){                         
+        reaction = 101;                        //turn left 90
     
-    } else if(rightCounter > 0 && leftCounter == 0 && horiCounter == 0){
+    } else if(rightCounter > 0 && leftCounter == 0){
         reaction = 102;                                 //turn right 90
-    } else if (leftCounter > 0){                         
-        reaction = 101;                                 //turn left 90
+                                    
     } else if(horiCounter == 0){
         reaction = 100;                                 //turn 180
     } 
