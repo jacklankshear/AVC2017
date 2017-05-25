@@ -14,12 +14,12 @@ double Q3(){
     }
     
     char leftPixels[120] = {};
-    for (int i=60; i<100; i++){
+    for (int i=60; i<120; i++){
         leftPixels[i] = get_pixel(i*2, 10, 3);
     }
     
     char rightPixels[120] = {};
-    for (int i=60; i<100; i++){
+    for (int i=60; i<120; i++){
         rightPixels[i] = get_pixel(i*2, 310, 3);
     }
     
@@ -60,7 +60,7 @@ double Q3(){
     if (horiCounter > 0){ 
 		if (horiError == 0 && topError == 0){                                       // go straight
             reaction = 0;
-        } else if (topAvgError - horiAvgError > 13){
+        } else if (topAvgError - horiAvgError > 10){
 			reaction = topAvgError;
 			
         } else {
@@ -73,9 +73,7 @@ double Q3(){
     } else if(rightCounter > 0 && leftCounter == 0){
         reaction = 102;                                 //turn right 90
                                     
-    } else if(horiCounter == 0){
-        reaction = 100;                                 //turn 180
-    } 
+    }
         
     return reaction;
     
@@ -83,8 +81,9 @@ double Q3(){
 
 int line(){
 	take_picture();
-	char pixel = get_pixel(160, 120, 3);
-	if (pixel > 127){
+	char leftPixel = get_pixel(190, 120, 3);
+	char rightPixel = get_pixel(130, 120, 3);
+	if (leftPixel > 127 || rightPixel > 127){
 		return 1;
 	} else {
 		return 0;
@@ -97,44 +96,44 @@ int main(){
     int motor1, motor2, foundLine;
     
     double turn = Q3();
-    sleep1(0, 100000);
+    sleep1(0, 50000);
     
     while (turn != 103){                     //until it finds white line or finds first wall of maze (temp atm)
         turn = Q3();
         
         if (turn == 100){             //180 turn
 			foundLine = line();
-			sleep1(0, 100000);
+			sleep1(0, 50000);
 			
 			while (foundLine == 0){
 				set_motor(1, 60);
 				set_motor(2, -60);
 				foundLine = line();
-				sleep1(0, 100000);
+				sleep1(0, 50000);
 			}
 			
         
         } else if (turn == 101){
             foundLine = line();       //turn left
-			sleep1(0, 100000);
+			sleep1(0, 50000);
 			
 			while (foundLine == 0){
 				set_motor(1, 55);
 				set_motor(2, 10);
 				foundLine = line();
-				sleep1(0, 100000);
+				sleep1(0, 50000);
 			}
 			
         
         } else if (turn == 102){
 			foundLine = line();      //turn right
-			sleep1(0, 100000);
+			sleep1(0, 50000);
 			
 			while (foundLine == 0){
 				set_motor(1, 15);
 				set_motor(2, 85);
 				foundLine = line();
-				sleep1(0, 100000);
+				sleep1(0, 50000);
 			}
 			
         
@@ -146,7 +145,7 @@ int main(){
             set_motor(1, motor1);
             set_motor(2, motor2);
 
-            sleep1(0, 100000);
+            sleep1(0, 50000);
         
         }
     }
