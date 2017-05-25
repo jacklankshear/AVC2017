@@ -1,0 +1,275 @@
+#include "E101.h"
+#include <stdio.h>
+
+
+int gate (){
+
+     // This sets up the RPi hardware and ensures
+     // everything is working correctly
+	sleep1(0,500000);
+     
+    //connects to server with the ip address
+    char ip[24] = "130.195.6.196";
+	connect_to_server(ip, 1024);
+	sleep1(0,500000);
+
+	char message[24] = "Please";
+	send_to_server(message);
+	sleep1(0,500000);
+	
+	//receives password from the connected server
+	char password[24];
+	receive_from_server(password);
+	sleep1(0,500000);
+
+	//sends the password to the server to open the gate
+	send_to_server(password);
+	sleep1(0,500000);
+
+	return 0;
+}
+
+
+double Q2(){
+    take_picture();
+    char pixels[160] = {};
+    for(int i=0; i<160; i++){
+        pixels[i] = get_pixel(120, i*2, 3);
+    }
+
+    int err = 0;
+    int counter = 0;
+    for(int i=0; i < 160; i++){
+        if(pixels[i] > 127){
+            err += (i - 80);
+            counter++;
+        }
+    }
+    
+    double avgErr;
+    
+    if (counter == 0){
+        avgErr = -100;
+    } else if (counter == 80){
+        avgErr = 100;
+    } else{
+        if (err == 0){                           // check that err != 0
+            avgErr = 0;
+        } else {
+            avgErr = err / counter;
+        }
+    }
+
+    return avgErr;
+}
+
+
+int firstTwoQuadrants(){
+    gate();
+    
+    sleep1(1, 0);
+    
+    int motor1;
+    int motor2;
+    
+    double turn = Q2();
+    
+    sleep1(0, 100000);
+    
+    while (turn != 100){           
+    
+        turn = Q2();
+        
+        if (turn == -100){
+            set_motor(1, -50);
+            set_motor(2, -50);
+            
+            sleep1(0, 100000);
+        } else {
+            double scale = 0.25;          
+            motor1 = 50 - (int) (turn * scale);
+            motor2 = 50 + (int) (turn * scale);
+
+            set_motor(1, motor1);
+            set_motor(2, motor2);
+
+            sleep1(0, 100000);
+        }
+    }
+    
+   
+    return 0;
+}
+
+
+double Q3(){
+    take_picture();
+    char horiPixels[160] = {}, topPixels[160] = {}, bluePixels[160] = {};
+    for (int i=0; i<160; i++){
+        horiPixels[i] = get_pixel(80, i*2, 3);
+        topPixels[i] = get_pixel(1, i*2, 3);
+        bluePixels[i] = get_pixel(80, i*2, 2);
+    }
+    
+    char leftPixels[120] = {}, rightPixels[120] = {};
+    for (int i=60; i<120; i++){
+        leftPixels[i] = get_pixel(i*2, 10, 3);
+        rightPixels[i] = get_pixel(i*2, 310, 3);
+    }
+    
+    int horiError = 0, topError = 0, horiCounter = 0, blueCounter = 0, topCounter = 0, leftCounter = 0, rightCounter = 0;
+    for (int i=0; i < 160; i++){
+        if (horiPixels[i] > 127){
+            horiError += i - 80;
+            horiCounter++;
+        }
+        if (bluePixels[i] > 127){
+            blueCounter++;
+        }
+    }
+    
+    for (int i=0; i < 120; i++){
+        if (topPixels[i] > 127){
+			topError += i - 80;
+            topCounter++;
+        }
+        if (leftPixels[i] > 127){
+            leftCounter++;
+        }
+        if (rightPixels[i] > 127){
+            rightCounter++;
+        }
+    }
+
+    
+    double reaction, horiAvgError, topAvgError;
+    if (horiCounter > 0){
+        horiAvgError = horiError / horiCounter;
+    }
+    if (topCounter > 0){
+        topAvgError = topError / topCounter;
+    }
+    
+    if (horiCounter > 0){ 
+        if (horiCounter == blueCounter){
+            if (horiError == 0 && topError == 0){                // go straight
+                reaction = 0;
+            } else if (topAvgError - horiAvgError > 10){
+                reaction = topAvgError;
+
+            } else {
+                reaction = horiAvgError;
+            }
+        } else {
+            reaction = 103;
+        }
+		
+	} else if (leftCounter > 0){                         
+        reaction = 101;                                  //turn left 90
+    
+    } else if (rightCounter > 0 && leftCounter == 0){
+        reaction = 102;                                 //turn right 90
+                                    
+    }
+        
+    return reaction;
+    
+}
+
+
+int line(){
+	take_picture();
+	char leftPixel = get_pixel(190, 120, 3);
+	char rightPixel = get_pixel(130, 120, 3);
+	if (leftPixel > 127 || rightPixel > 127){
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+
+int thirdQuadrant(){
+    int motor1, motor2, foundLine;
+    
+    double turn = Q3();
+    sleep1(0, 50000);
+    
+    while (turn != 103){                     //until it finds red
+        turn = Q3();
+        
+        if (turn == 100){             //180 turn
+			foundLine = line();
+			sleep1(0, 50000);
+			
+			while (foundLine == 0){
+				set_motor(1, 60);
+				set_motor(2, -60);
+				foundLine = line();
+				sleep1(0, 50000);
+			}
+			
+        
+        } else if (turn == 101){
+            foundLine = line();       //turn left
+			sleep1(0, 50000);
+			
+			while (foundLine == 0){
+				set_motor(1, 55);
+				set_motor(2, 10);
+				foundLine = line();
+				sleep1(0, 50000);
+			}
+			
+        
+        } else if (turn == 102){
+			foundLine = line();      //turn right
+			sleep1(0, 50000);
+			
+			while (foundLine == 0){
+				set_motor(1, 15);
+				set_motor(2, 85);
+				foundLine = line();
+				sleep1(0, 50000);
+			}
+			
+        
+        } else{                           //go straight
+            double scale = 0.25;                       
+            motor1 = 55 - (int) (turn * scale);
+            motor2 = 55 + (int) (turn * scale);
+
+            set_motor(1, motor1);
+            set_motor(2, motor2);
+
+            sleep1(0, 50000);
+        
+        }
+    }
+    
+    return 0;
+}
+
+
+int main(){
+    init();
+    
+    firstTwoQuadrants();
+    set_motor(1, 1);            //use for testing transition
+    set_motor(2, 1);
+    sleep1(1, 0);
+    
+    set_motor(1, 55);
+    set_motor(2, 55);
+    sleep1(0, 300000);
+    
+    thirdQuadrant();
+    set_motor(1, 1);            //use for testing transition
+    set_motor(2, 1);
+    sleep1(1, 0);
+    
+    set_motor(1, 55);
+    set_motor(2, 55);
+    
+    return 0;
+}
