@@ -50,7 +50,7 @@ double Q2(){
     
     if (counter == 0){
         avgErr = -100;
-    } else if (counter == 80){
+    } else if (counter >= 90){
         avgErr = 100;
     } else{
         if (err == 0){                           // check that err != 0
@@ -106,7 +106,7 @@ double Q3(){
     take_picture();
     char horiPixels[160] = {}, topPixels[160] = {}, bluePixels[160] = {};
     for (int i=0; i<160; i++){
-        horiPixels[i] = get_pixel(80, i*2, 3);
+        horiPixels[i] = get_pixel(100, i*2, 3);
         topPixels[i] = get_pixel(1, i*2, 3);
         bluePixels[i] = get_pixel(80, i*2, 2);
     }
@@ -151,18 +151,18 @@ double Q3(){
     }
     
     if (horiCounter > 0){ 
-        if (horiCounter == blueCounter){
+        //if (horiCounter == blueCounter){
             if (horiError == 0 && topError == 0){                // go straight
                 reaction = 0;
-            } else if (topAvgError - horiAvgError > 10){
+            } else if (topAvgError - horiAvgError > 5){
                 reaction = topAvgError;
 
             } else {
                 reaction = horiAvgError;
             }
-        } else {
-            reaction = 103;
-        }
+        //} else {
+            //reaction = 103;
+        //}
 		
 	} else if (leftCounter > 0){                         
         reaction = 101;                                  //turn left 90
@@ -179,8 +179,8 @@ double Q3(){
 
 int line(){
 	take_picture();
-	char leftPixel = get_pixel(190, 120, 3);
-	char rightPixel = get_pixel(130, 120, 3);
+	char leftPixel = get_pixel(205, 120, 3);
+	char rightPixel = get_pixel(115, 120, 3);
 	if (leftPixel > 127 || rightPixel > 127){
 		return 1;
 	} else {
@@ -195,7 +195,7 @@ int thirdQuadrant(){
     double turn = Q3();
     sleep1(0, 50000);
     
-    while (turn != 103){                     //until it finds red
+    while (turn != 104){                     //until it finds red
         turn = Q3();
         
         if (turn == 100){             //180 turn
@@ -261,7 +261,7 @@ int main(){
     
     set_motor(1, 55);
     set_motor(2, 55);
-    sleep1(0, 300000);
+    sleep1(0, 200000);
     
     thirdQuadrant();
     set_motor(1, 1);            //use for testing transition
